@@ -1,7 +1,9 @@
 import express from "express";
-import UserModel, {IUserSchema, UserDTO} from "../models/User";
+import UserModel from "../models/User";
 import * as _ from "lodash";
-import authenticate from "../middleware/authenticate";
+import auth from "../middleware/authenticate";
+
+import CreateUserDto from "../Interfaces/User/CreateUserDto";
 import RequestWithUser from "../Interfaces/RequestWithUser";
 
 export default class AuthController {
@@ -13,53 +15,62 @@ export default class AuthController {
     }
 
     public initRoutes() {
-        this.router.get('/login', (req, res) => {
-            res.send("LOGIN")
-        });
         this.router.post('/register', this.registerUser);
-        // @ts-ignore
-        this.router.get("/me", authenticate, this.showUser);
-        this.router.post('/login', this.handleLogin)
+        this.router.get("/me", auth, this.showUser);
+        this.router.post('/login', this.handleLogin);
+        this.router.delete('/logout', auth, this.handleLogout);
     }
 
-    private handleLogin(req: express.Request, res: express.Response) {
+    private async handleLogin(req: express.Request, res: express.Response) {
         const body = _.pick(req.body, ['email', 'password']);
 
-        UserModel.findByCredentials(body.email, body.password)
-            .then((user) => {
-                return user.generateAuthToken()
+        try {
+            const user = await UserModel.findByCredentials(body.email, body.password);
+            const token = await user.generateAuthToken();
+            res.send({
+                token
             })
-            .then((token) => {
-                res.send({
-                    token
-                })
-            })
-            .catch((e) => {
-                res.status(400).send(e)
-            })
+        } catch (e) {
+            res.status(400).send(e);
+        }
     }
 
-    private registerUser(req: express.Request, res: express.Response) {
-        const userData: UserDTO = req.body;
+    private async registerUser(req: express.Request, res: express.Response) {
+        const userData: CreateUserDto = req.body;
         const newUser = new UserModel(userData);
-        console.log(newUser)
-        newUser.save()
-            .then((user) => {
-                return user.generateAuthToken();
-            })
-            .then((token) => {
-                res.send({
-                    token
-                })
-            })
-            .catch((error) => {
-                res.status(400).send(error);
-            })
+
+        try {
+            const savedUser = await newUser.save();
+            const token = await savedUser.generateAuthToken();
+            res.send({
+                token
+            });
+        } catch (e) {
+            res.status(400).send(e);
+        }
+
     }
 
-    private showUser(req: RequestWithUser, res: express.Response) {
+    private showUser(expressRequest: express.Request, res: express.Response) {
+        const req = expressRequest as RequestWithUser;
         res.send({
-            email: req.user.email
+            id: req.user._id.toString(),
+            email: req.user.email,
+            firstName: req.user.firstName,
+            lastName: req.user.lastName
         })
+    }
+
+    private async handleLogout(expressRequest: express.Request, res: express.Response) {
+        const req = expressRequest as RequestWithUser;
+
+        try {
+            await req.user.removeToken();
+            res.send({
+                message: "Logged out."
+            })
+        } catch (e) {
+            res.status(400).send(e);
+        }
     }
 }

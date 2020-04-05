@@ -1,9 +1,11 @@
 import express = require('express');
 import * as bodyParser from "body-parser";
+import cors from "cors";
 
 import AuthController from "./controllers/AuthController";
 
 import mongoose from "mongoose";
+import CalendarController from "./controllers/CalendarController";
 
 class App {
     public app: express.Application;
@@ -20,6 +22,7 @@ class App {
 
     private initMiddleware() {
         this.app.use(bodyParser.json());
+        this.app.use(cors());
     }
 
     private initControllers(controllers: any[]) {
@@ -46,7 +49,12 @@ const app: App = new App([
     {
         route: "/auth",
         controller: new AuthController()
-    }], 3000);
+    },
+    {
+        route: "/calendars",
+        controller: new CalendarController()
+    }
+], 3000);
 
 app.listen();
 

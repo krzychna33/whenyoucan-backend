@@ -1,24 +1,8 @@
 import mongoose, {Schema, Document, Model} from "mongoose";
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
-import AuthTokenInterface from "../Interfaces/AuthTokenInterface";
 
-export interface IUser extends Document{
-    email: string,
-    password: string,
-    generateAuthToken(): string,
-    tokens: AuthTokenInterface[]
-}
-
-export interface IUserSchema extends Model<IUser>{
-    findByToken(token: any): any,
-    findByCredentials(email: string, password: string): Promise<IUser>
-}
-
-export interface UserDTO {
-    email: string,
-    password: string
-}
+import {IUser, IUserSchema} from "../Interfaces/User/User";
 
 const UserSchema = new Schema({
     email: {
@@ -32,6 +16,14 @@ const UserSchema = new Schema({
         type: String,
         required: true,
         minlength: 6
+    },
+    firstName: {
+        type: String,
+        required: true
+    },
+    lastName: {
+        type: String,
+        required: true
     },
     tokens: [{
         access: {
@@ -50,7 +42,7 @@ UserSchema.statics.findByCredentials = function (email: string, password: string
 
     return User.findOne({ email }).then((user: IUser) => {
         if (!user) {
-            return Promise.reject('no user in the db');
+            return Promise.reject('User not found!');
         }
 
         return new Promise((resolve, reject) => {
@@ -58,7 +50,7 @@ UserSchema.statics.findByCredentials = function (email: string, password: string
                 if (res) {
                     resolve(user);
                 } else {
-                    reject('Passwords dont not match!');
+                    reject(`Passwords don't match!`);
                 }
             })
         });
@@ -70,11 +62,10 @@ UserSchema.statics.findByToken = function (token: string) {
     const User = this;
     let decoded: any;
 
-
     try {
         decoded = jwt.verify(token, `${process.env.JWT_SECRET}`);
     } catch (e) {
-        return Promise.reject('CLIENT ERROR: 401 UNAUTHORIZED');
+        return Promise.reject('Unauthorized.');
     }
 
     return User.findOne({
@@ -82,7 +73,7 @@ UserSchema.statics.findByToken = function (token: string) {
         'tokens.token': token,
         'tokens.access': 'auth'
     })
-}
+};
 
 UserSchema.methods.generateAuthToken = function () {
     const user = this;
@@ -96,6 +87,17 @@ UserSchema.methods.generateAuthToken = function () {
     })
 };
 
+UserSchema.methods.removeToken = function (token: string) {
+    const user = this;
+
+    return user.update({
+        $pull: {
+            tokens: {
+                token: token
+            }
+        }
+    });
+};
 
 UserSchema.pre('save', function (next) {
         const user: any = this;

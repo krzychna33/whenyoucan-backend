@@ -1,5 +1,5 @@
 import express from "express";
-import {IUser} from "../models/User";
+import {IUser} from "./User/User";
 
 export default interface RequestWithUser extends express.Request {
     user: IUser,
