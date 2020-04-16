@@ -2,7 +2,7 @@ import mongoose, {Schema, Document, Model} from "mongoose";
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 
-import {IUser, IUserSchema} from "../Interfaces/User/User";
+import {IUser, IUserSchema} from "../interfaces/User/User";
 
 const UserSchema = new Schema({
     email: {

@@ -3,8 +3,8 @@ import UserModel from "../models/User";
 import * as _ from "lodash";
 import auth from "../middleware/authenticate";
 
-import CreateUserDto from "../Interfaces/User/CreateUserDto";
-import RequestWithUser from "../Interfaces/RequestWithUser";
+import CreateUserDto from "../interfaces/User/CreateUserDto";
+import RequestWithUser from "../interfaces/RequestWithUser";
 
 export default class AuthController {
 
@@ -54,7 +54,7 @@ export default class AuthController {
     private showUser(expressRequest: express.Request, res: express.Response) {
         const req = expressRequest as RequestWithUser;
         res.send({
-            id: req.user._id.toString(),
+            _id: req.user._id.toString(),
             email: req.user.email,
             firstName: req.user.firstName,
             lastName: req.user.lastName

@@ -51,7 +51,7 @@ const app: App = new App([
         controller: new AuthController()
     },
     {
-        route: "/calendars",
+        route: "/weekly-calendars",
         controller: new CalendarController()
     }
 ], 3000);

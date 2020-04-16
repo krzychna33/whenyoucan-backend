@@ -1,5 +1,5 @@
 import mongoose, {Schema} from "mongoose";
-import {ICalendar, ICalendarSchema} from "../Interfaces/Calendar/Calendar";
+import {ICalendar, ICalendarSchema} from "../interfaces/Calendar/Calendar";
 
 const {ObjectId, Date} = mongoose.Schema.Types;
 
@@ -12,13 +12,19 @@ const CalendarSchema = new Schema({
         type: String,
         required: true
     },
+    pin: {
+        type: String
+    },
     users: [
         ObjectId
     ],
-    attendances: [
+    reservedAttendances: [
         {
-            user: ObjectId,
-            times: [Date]
+            user: {
+                firstName: String,
+                _id: ObjectId
+            },
+            times: []
         }
     ]
 }, { usePushEach: true });
