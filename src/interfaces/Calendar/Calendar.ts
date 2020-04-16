@@ -14,6 +14,15 @@ export interface ICalendar extends Document{
     users: any,
     pin: string,
     reservedAttendances: ReservedAttendances[]
+    getPublic() : any
+}
+
+export interface ICalendarPublic {
+    _id: any,
+    ownerId: any
+    name: string,
+    users: any,
+    reservedAttendances: ReservedAttendances[]
 }
 
 export interface ICalendarSchema extends Model<ICalendar>{

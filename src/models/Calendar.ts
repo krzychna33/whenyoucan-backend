@@ -29,5 +29,13 @@ const CalendarSchema = new Schema({
     ]
 }, { usePushEach: true });
 
+CalendarSchema.methods.getPublic = function () {
+    const {_id, ownerId, name, users, reservedAttendances} = this;
+
+    return {
+        _id, ownerId, name, users, reservedAttendances
+    }
+};
+
 export const CalendarModel = mongoose.model<ICalendar, ICalendarSchema>('Calendar', CalendarSchema)
 
