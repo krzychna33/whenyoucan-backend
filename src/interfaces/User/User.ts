@@ -1,14 +1,18 @@
 import {Document, Model} from "mongoose";
 import AuthTokenInterface from "../AuthTokenInterface";
 
-export interface IUser extends Document{
+export interface IUserEntity {
+    _id: any,
     email: string,
     password: string,
     firstName: string,
     lastName: string,
-    generateAuthToken(): string,
-    removeToken(): IUser,
     tokens: AuthTokenInterface[]
+}
+
+export interface IUser extends Document, IUserEntity{
+    generateAuthToken(): string,
+    removeToken(): IUser
 }
 
 export interface IUserSchema extends Model<IUser>{

@@ -28,7 +28,6 @@ export default class CalendarController {
         this.router.get('/connected/:id', auth, this.getConnectedCalendar);
         this.router.get('/:id', auth, this.getOwnCalendar);
 
-
         this.router.post('/push-attendances/:id', auth, this.pushAttendances);
         this.router.post('/join/:id', auth, this.joinCalendar);
     }

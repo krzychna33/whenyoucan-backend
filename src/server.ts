@@ -1,7 +1,7 @@
 import express = require('express');
 import * as bodyParser from "body-parser";
 import cors from "cors";
-
+require('dotenv').config()
 import AuthController from "./controllers/AuthController";
 
 import mongoose from "mongoose";
@@ -15,9 +15,21 @@ class App {
         this.app = express();
         this.port = port;
 
+        this.loadConfig();
         this.initMiddleware();
         this.initControllers(controllers);
         this.connectWithDatabase();
+    }
+
+    private loadConfig() {
+        const env = process.env.NODE_ENV || "development";
+        console.log(`[APP] Loaded ${env} environment`);
+
+        if (env === "development") {
+            require('dotenv').config({path: ".env"});
+        } else if (env === "test") {
+            require('dotenv').config({path: ".env.test"});
+        }
     }
 
     private initMiddleware() {
@@ -32,11 +44,10 @@ class App {
     }
 
     private connectWithDatabase() {
-        mongoose.connect(`mongodb://localhost:27017/wyc`, {
+        mongoose.connect(`${process.env.MONGODB_URI}`, {
             useNewUrlParser: true
         });
     }
-
 
     public listen() {
         this.app.listen(this.port,() => {
@@ -45,7 +56,7 @@ class App {
     }
 }
 
-const app: App = new App([
+export const app: App = new App([
     {
         route: "/auth",
         controller: new AuthController()

@@ -8,12 +8,15 @@ export interface ReservedAttendances {
     times: any[]
 }
 
-export interface ICalendar extends Document{
+export interface ICalendarEntity {
+    _id: any,
     ownerId: any
     name: string,
     users: any,
     pin: string,
     reservedAttendances: ReservedAttendances[]
+}
+export interface ICalendar extends Document, ICalendarEntity{
     getPublic() : any
 }
 

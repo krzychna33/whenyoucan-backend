@@ -61,7 +61,7 @@ UserSchema.statics.findByCredentials = function (email: string, password: string
 UserSchema.statics.findByToken = function (token: string) {
     const User = this;
     let decoded: any;
-
+    console.log(`${process.env.JWT_SECRET}`)
     try {
         decoded = jwt.verify(token, `${process.env.JWT_SECRET}`);
     } catch (e) {
