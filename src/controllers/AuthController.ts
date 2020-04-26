@@ -1,10 +1,11 @@
 import express from "express";
 import UserModel from "../models/User";
 import * as _ from "lodash";
-import auth from "../middleware/authenticate";
+import {forceAuth} from "../middleware/authenticate";
 
 import CreateUserDto from "../interfaces/User/CreateUserDto";
 import RequestWithUser from "../interfaces/RequestWithUser";
+import axios from "axios";
 
 export default class AuthController {
 
@@ -16,9 +17,10 @@ export default class AuthController {
 
     public initRoutes() {
         this.router.post('/register', this.registerUser);
-        this.router.get("/me", auth, this.showUser);
+        this.router.get("/me", forceAuth, this.showUser);
         this.router.post('/login', this.handleLogin);
-        this.router.delete('/logout', auth, this.handleLogout);
+        this.router.post('/facebook-login', this.handleFacebookLogin);
+        this.router.delete('/logout', forceAuth, this.handleLogout);
     }
 
     private async handleLogin(req: express.Request, res: express.Response) {
@@ -31,8 +33,28 @@ export default class AuthController {
                 token
             })
         } catch (e) {
-            res.status(400).send(e);
+            res.status(400).send({message: e});
         }
+    }
+
+    private async handleFacebookLogin(req: express.Request, res: express.Response) {
+        const {access_token, user_id} = req.body;
+        try {
+            const response = await axios.get(`https://graph.facebook.com/${user_id}?fields=id,name,email&access_token=${access_token}`)
+            const user = UserModel.findOne({email: response.data.email});
+            if (user) {
+                throw new Error("Your email is taken");
+            }
+            const [firstName, lastName] = response.data.name.split(" ");
+            const newUser = new UserModel({
+                firstName,
+                lastName,
+                password:
+            })
+        } catch (e) {
+
+        }
+
     }
 
     private async registerUser(req: express.Request, res: express.Response) {

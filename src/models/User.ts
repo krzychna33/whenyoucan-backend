@@ -25,6 +25,10 @@ const UserSchema = new Schema({
         type: String,
         required: true
     },
+    facebookId: {
+        type: String,
+        required: false
+    },
     tokens: [{
         access: {
             type: String,
@@ -42,7 +46,7 @@ UserSchema.statics.findByCredentials = function (email: string, password: string
 
     return User.findOne({ email }).then((user: IUser) => {
         if (!user) {
-            return Promise.reject('User not found!');
+            return Promise.reject('Bad Credentials');
         }
 
         return new Promise((resolve, reject) => {
@@ -65,7 +69,7 @@ UserSchema.statics.findByToken = function (token: string) {
     try {
         decoded = jwt.verify(token, `${process.env.JWT_SECRET}`);
     } catch (e) {
-        return Promise.reject('Unauthorized.');
+        return Promise.reject('Unauthorized');
     }
 
     return User.findOne({

@@ -1,12 +1,10 @@
 import express from "express";
 
-import auth from "../middleware/authenticate";
+import {forceAuth, auth} from "../middleware/authenticate";
 import RequestWithUser from "../interfaces/RequestWithUser";
 import {CalendarModel} from "../models/Calendar";
 import {CreateCalendarDto} from "../interfaces/Calendar/CreateCalendarDto";
 import mongoose from "mongoose";
-import {ICalendar} from "../interfaces/Calendar/Calendar";
-import {parse} from "dotenv";
 
 const {ObjectId} = mongoose.Types;
 
@@ -20,16 +18,17 @@ export default class CalendarController {
     }
 
     public initRoutes() {
-        this.router.post('/', auth, this.createCalendar);
+        this.router.post('/', forceAuth, this.createCalendar);
 
-        this.router.get('/own', auth, this.getOwnCalendars);
-        this.router.get('/connected', auth, this.getConnectedCalendars);
+        this.router.get('/own', forceAuth, this.getOwnCalendars);
+        this.router.get('/connected', forceAuth, this.getConnectedCalendars);
 
-        this.router.get('/connected/:id', auth, this.getConnectedCalendar);
-        this.router.get('/:id', auth, this.getOwnCalendar);
+        // this.router.get('/connected/:id', auth, this.getConnectedCalendar);
+        // this.router.get('/public/:id', this.getPublicCalendar);
+        this.router.get('/:id', auth, this.getCalendar);
 
-        this.router.post('/push-attendances/:id', auth, this.pushAttendances);
-        this.router.post('/join/:id', auth, this.joinCalendar);
+        this.router.post('/push-attendances/:id', forceAuth, this.pushAttendances);
+        this.router.post('/join/:id', forceAuth, this.joinCalendar);
     }
 
     private async createCalendar(expressRequest: express.Request, res: express.Response) {
@@ -74,7 +73,7 @@ export default class CalendarController {
 
     }
 
-    private async getOwnCalendar(expressRequest: express.Request, res: express.Response) {
+    private async getCalendar(expressRequest: express.Request, res: express.Response) {
         const req = expressRequest as RequestWithUser;
         const {id} = req.params;
 
@@ -84,8 +83,7 @@ export default class CalendarController {
 
         try {
             const calendar = await CalendarModel.findOne({
-                _id: id,
-                ownerId: req.user._id
+                _id: id
             });
 
             if (!calendar) {
@@ -94,7 +92,25 @@ export default class CalendarController {
                 })
             }
 
-            res.send(calendar);
+            if (!req.user) {
+                return res.send(calendar.getPublic());
+            }
+
+            if (req.user && req.user._id.toString() === calendar.ownerId.toString()) {
+                return res.send(calendar);
+            }
+
+            const isUserConnected = calendar.reservedAttendances.findIndex((item) => {
+                if (item.user._id.toString() === req.user._id.toString()) {
+                    return item;
+                }
+            });
+
+            if (isUserConnected !== -1) {
+                return res.send(calendar.getConnected());
+            }
+
+            res.send(calendar.getPublic());
         } catch (e) {
             res.send(400).send(e);
         }
@@ -176,37 +192,13 @@ export default class CalendarController {
         try {
             let calendars = await CalendarModel.find({users: req.user._id, ownerId: {$ne: req.user._id}});
             const parsedCalendars = await calendars.map((calendar) => {
-                return calendar.getPublic();
+                return calendar.getConnected();
             });
-            res.send(parsedCalendars);
+            res.send({
+                results: parsedCalendars
+            });
         } catch (e) {
             res.status(400).send(e);
         }
     }
-
-    private async getConnectedCalendar(expressRequest: express.Request, res: express.Response) {
-        const req = expressRequest as RequestWithUser;
-        const {id} = req.params;
-
-        if (!ObjectId.isValid(id)) {
-            return res.status(400).send();
-        }
-
-        try {
-            const calendar = await CalendarModel.findOne({
-                _id: id,
-                users: req.user._id
-            });
-
-            if (!calendar) {
-                return res.status(404).send({
-                    message: "Not found"
-                })
-            }
-            res.send(calendar.getPublic());
-        } catch (e) {
-            res.send(400).send(e);
-        }
-    }
-
 }

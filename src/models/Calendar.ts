@@ -6,7 +6,8 @@ const {ObjectId, Date} = mongoose.Schema.Types;
 const CalendarSchema = new Schema({
     ownerId: {
         type: ObjectId,
-        required: true
+        required: true,
+        ref: "User"
     },
     name: {
         type: String,
@@ -29,11 +30,19 @@ const CalendarSchema = new Schema({
     ]
 }, { usePushEach: true });
 
-CalendarSchema.methods.getPublic = function () {
+CalendarSchema.methods.getConnected = function () {
     const {_id, ownerId, name, users, reservedAttendances} = this;
 
     return {
         _id, ownerId, name, users, reservedAttendances
+    }
+};
+
+CalendarSchema.methods.getPublic = function () {
+    const {_id, ownerId, name, users, reservedAttendances} = this;
+
+    return {
+        _id, name
     }
 };
 

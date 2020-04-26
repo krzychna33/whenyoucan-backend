@@ -1,6 +1,8 @@
 interface CreateUserDto {
-    login: string,
-    password: string
+    email: string,
+    password: string,
+    lastName: string,
+    firstName: string
 }
 
 export default CreateUserDto;

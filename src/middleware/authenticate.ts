@@ -4,7 +4,7 @@ import express from "express"
 import RequestWithUser from "../interfaces/RequestWithUser";
 import {IUser} from "../interfaces/User/User";
 
-function auth(expressRequest: express.Request, res: express.Response, next: express.NextFunction) {
+export function forceAuth(expressRequest: express.Request, res: express.Response, next: express.NextFunction) {
     const req = expressRequest as RequestWithUser;
     const token = req.header('x-auth') as string;
 
@@ -25,5 +25,25 @@ function auth(expressRequest: express.Request, res: express.Response, next: expr
     })
 };
 
+export function auth(expressRequest: express.Request, res: express.Response, next: express.NextFunction) {
+    const req = expressRequest as RequestWithUser;
+    const token = req.header('x-auth') as string;
+    console.log("abcd")
 
-export default auth;
+
+    UserModel.findByToken(token).then((user: IUser) => {
+        if (user) {
+            req.user = user;
+            req.token = token;
+        }
+
+        next();
+    }).catch((e: any) => {
+        if (e === "Unauthorized") {
+            return next();
+        }
+        res.status(401).send({
+            message: e
+        });
+    })
+}

@@ -17,7 +17,8 @@ export interface ICalendarEntity {
     reservedAttendances: ReservedAttendances[]
 }
 export interface ICalendar extends Document, ICalendarEntity{
-    getPublic() : any
+    getConnected() : any
+    getPublic(): any
 }
 
 export interface ICalendarPublic {
