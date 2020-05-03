@@ -46,7 +46,9 @@ class App {
     private connectWithDatabase() {
         mongoose.connect(`${process.env.MONGODB_URI}`, {
             useNewUrlParser: true
-        });
+        })
+            .then(() => console.log("[APP] Connected with database ❤️"))
+            .catch((e) => console.log(e));
     }
 
     public listen() {

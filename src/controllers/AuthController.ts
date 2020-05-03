@@ -6,6 +6,8 @@ import {forceAuth} from "../middleware/authenticate";
 import CreateUserDto from "../interfaces/User/CreateUserDto";
 import RequestWithUser from "../interfaces/RequestWithUser";
 import axios from "axios";
+import generator from "generate-password";
+
 
 export default class AuthController {
 
@@ -41,18 +43,36 @@ export default class AuthController {
         const {access_token, user_id} = req.body;
         try {
             const response = await axios.get(`https://graph.facebook.com/${user_id}?fields=id,name,email&access_token=${access_token}`)
-            const user = UserModel.findOne({email: response.data.email});
+            const user = await UserModel.findOne({email: response.data.email});
             if (user) {
-                throw new Error("Your email is taken");
+                if (user.facebookId === user_id) {
+                    const token = await user.generateAuthToken();
+                    res.send({
+                        token
+                    })
+                } else {
+                    throw new Error("Email is taken");
+                }
+            } else {
+                const [firstName, lastName] = response.data.name.split(" ");
+                const newUser = new UserModel({
+                    email: response.data.email,
+                    firstName,
+                    lastName,
+                    password: generator.generate({length: 16, numbers: true}),
+                    facebookId: user_id
+                })
+                const savedUser = await newUser.save();
+                if (!savedUser) {
+                    throw new Error("Failed while saving user to the database.")
+                }
+                const token = await savedUser.generateAuthToken();
+                res.send({
+                    token
+                });
             }
-            const [firstName, lastName] = response.data.name.split(" ");
-            const newUser = new UserModel({
-                firstName,
-                lastName,
-                password:
-            })
         } catch (e) {
-
+            res.status(400).send({message: e.message});
         }
 
     }

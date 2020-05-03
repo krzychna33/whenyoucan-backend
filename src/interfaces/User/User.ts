@@ -7,6 +7,7 @@ export interface IUserEntity {
     password: string,
     firstName: string,
     lastName: string,
+    facebookId: string,
     tokens: AuthTokenInterface[]
 }
 
