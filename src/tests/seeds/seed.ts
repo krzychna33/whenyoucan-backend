@@ -18,6 +18,7 @@ export const users: IUserEntity[] = [
         password: 'password1',
         firstName: 'seed1',
         lastName: 'seed1',
+        facebookId: "fbid",
         tokens:[
             {
                 access: 'auth',

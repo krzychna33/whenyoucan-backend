@@ -29,7 +29,10 @@ class App {
             require('dotenv').config({path: ".env"});
         } else if (env === "test") {
             require('dotenv').config({path: ".env.test"});
+        } else if (env === "production") {
+            require('dotenv').config({path: ".env.prod"});
         }
+
     }
 
     private initMiddleware() {
