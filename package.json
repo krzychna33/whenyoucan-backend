@@ -9,7 +9,7 @@
   "scripts": {
     "tsc": "tsc",
     "dev": "ts-node-dev --respawn --transpileOnly ./src/server.ts",
-    "prod": "tsc && node ./build/server.js ",
+    "prod": "tsc && NODE_ENV=production && node ./build/server.js ",
     "heroku-postbuild": "npm run tsc",
     "start": "node ./build/server.js",
     "test": "export NODE_ENV=test || SET \\\"NODE_ENV=test\\\" && mocha -r ts-node/register src/**/*.test.ts"

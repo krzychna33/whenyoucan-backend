@@ -7,6 +7,8 @@ import AuthController from "./controllers/AuthController";
 import mongoose from "mongoose";
 import CalendarController from "./controllers/CalendarController";
 
+const port = process.env.PORT || 3000;
+
 class App {
     public app: express.Application;
     public port: any;
@@ -70,7 +72,7 @@ export const app: App = new App([
         route: "/weekly-calendars",
         controller: new CalendarController()
     }
-], 3000);
+], port);
 
 app.listen();
 
