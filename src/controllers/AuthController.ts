@@ -95,12 +95,7 @@ export default class AuthController {
 
     private showUser(expressRequest: express.Request, res: express.Response) {
         const req = expressRequest as RequestWithUser;
-        res.send({
-            _id: req.user._id.toString(),
-            email: req.user.email,
-            firstName: req.user.firstName,
-            lastName: req.user.lastName
-        })
+        res.send(req.user.getPublic())
     }
 
     private async handleLogout(expressRequest: express.Request, res: express.Response) {

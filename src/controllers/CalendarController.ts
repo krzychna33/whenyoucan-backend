@@ -5,6 +5,7 @@ import RequestWithUser from "../interfaces/RequestWithUser";
 import {CalendarModel} from "../models/Calendar";
 import {CreateCalendarDto} from "../interfaces/Calendar/CreateCalendarDto";
 import mongoose from "mongoose";
+import {IUserEntity} from "../interfaces/User/User";
 
 const {ObjectId} = mongoose.Types;
 
@@ -25,6 +26,7 @@ export default class CalendarController {
 
         // this.router.get('/connected/:id', auth, this.getConnectedCalendar);
         // this.router.get('/public/:id', this.getPublicCalendar);
+        this.router.get('/:id/users', auth, this.getCalendarConnectedUsers);
         this.router.get('/:id', auth, this.getCalendar);
 
         this.router.post('/push-attendances/:id', forceAuth, this.pushAttendances);
@@ -97,7 +99,7 @@ export default class CalendarController {
             }
 
             if (req.user && req.user._id.toString() === calendar.ownerId.toString()) {
-                return res.send(calendar);
+                return res.send(calendar)
             }
 
             const isUserConnected = calendar.reservedAttendances.findIndex((item) => {
@@ -197,6 +199,34 @@ export default class CalendarController {
             res.send({
                 results: parsedCalendars
             });
+        } catch (e) {
+            res.status(400).send(e);
+        }
+    }
+
+    public async getCalendarConnectedUsers(expressRequest: express.Request, res: express.Response) {
+        const req = expressRequest as RequestWithUser;
+        const {id} = req.params;
+
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).send();
+        }
+
+        try {
+            const calendar = await CalendarModel.findOne({
+                _id: id
+            });
+
+            if (!calendar) {
+                return res.status(404).send();
+            }
+
+            const connectedUsers = await calendar.getConnectedUsers();
+
+            return res.send({
+                results: connectedUsers
+            });
+
         } catch (e) {
             res.status(400).send(e);
         }

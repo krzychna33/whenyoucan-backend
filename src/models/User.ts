@@ -2,7 +2,7 @@ import mongoose, {Schema, Document, Model} from "mongoose";
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 
-import {IUser, IUserSchema} from "../interfaces/User/User";
+import {IUser, IUserEntityPublic, IUserSchema} from "../interfaces/User/User";
 
 const UserSchema = new Schema({
     email: {
@@ -102,6 +102,14 @@ UserSchema.methods.removeToken = function (token: string) {
         }
     });
 };
+
+UserSchema.methods.getPublic = function(): IUserEntityPublic {
+    const {email, firstName, lastName, _id} = this;
+
+    return {
+        email, firstName, lastName, _id
+    }
+}
 
 UserSchema.pre('save', function (next) {
         const user: any = this;

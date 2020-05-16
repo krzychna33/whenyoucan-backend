@@ -1,5 +1,6 @@
 import mongoose, {Schema} from "mongoose";
 import {ICalendar, ICalendarSchema} from "../interfaces/Calendar/Calendar";
+import UserModel from "./User";
 
 const {ObjectId, Date} = mongoose.Schema.Types;
 
@@ -29,6 +30,19 @@ const CalendarSchema = new Schema({
         }
     ]
 }, { usePushEach: true });
+
+CalendarSchema.methods.getConnectedUsers = async function () {
+    const {users} = this;
+    const usersDocs = await UserModel.find({_id: {
+        $in: users
+        }})
+
+    const publicUsers = usersDocs.map(item => item.getPublic());
+
+    return [
+        ...publicUsers
+    ]
+}
 
 CalendarSchema.methods.getConnected = function () {
     const {_id, ownerId, name, users, reservedAttendances} = this;

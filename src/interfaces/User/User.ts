@@ -11,9 +11,17 @@ export interface IUserEntity {
     tokens: AuthTokenInterface[]
 }
 
+export interface IUserEntityPublic {
+    _id: any,
+    email: string,
+    firstName: string,
+    lastName: string,
+}
+
 export interface IUser extends Document, IUserEntity{
     generateAuthToken(): string,
     removeToken(): IUser
+    getPublic(): IUserEntity
 }
 
 export interface IUserSchema extends Model<IUser>{

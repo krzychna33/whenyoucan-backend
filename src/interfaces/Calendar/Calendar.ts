@@ -19,6 +19,8 @@ export interface ICalendarEntity {
 export interface ICalendar extends Document, ICalendarEntity{
     getConnected() : any
     getPublic(): any
+    getConnectedUsers(): any,
+    _doc: ICalendar
 }
 
 export interface ICalendarPublic {
