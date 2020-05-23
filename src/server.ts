@@ -1,9 +1,13 @@
+import {IOEventsListener} from "./events/IOEventsListener";
+
+require('dotenv').config()
+
 import express = require('express');
 import * as bodyParser from "body-parser";
 import cors from "cors";
-require('dotenv').config()
+import http, {Server} from "http";
+import socketIO from "socket.io";
 import AuthController from "./controllers/AuthController";
-
 import mongoose from "mongoose";
 import CalendarController from "./controllers/CalendarController";
 
@@ -11,11 +15,17 @@ const port = process.env.PORT || 3000;
 
 class App {
     public app: express.Application;
+    public server: Server;
+    public io: socketIO.Server;
     public port: any;
+    private IOEventsListener: IOEventsListener
 
     constructor(controllers: any[], port: any) {
         this.app = express();
+        this.server = http.createServer(this.app);
+        this.io = socketIO(this.server);
         this.port = port;
+        this.IOEventsListener = new IOEventsListener(this.io)
 
         this.loadConfig();
         this.initMiddleware();
@@ -57,7 +67,7 @@ class App {
     }
 
     public listen() {
-        this.app.listen(this.port,() => {
+        this.server.listen(this.port, () => {
             console.log(`[APP] Running on port ${this.port}`);
         });
     }

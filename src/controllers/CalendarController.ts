@@ -9,6 +9,9 @@ import {IUserEntity} from "../interfaces/User/User";
 
 const {ObjectId} = mongoose.Types;
 
+import {calendarEventEmitter} from "../events/calendarEvents"
+import {EVENT_TYPE_NEW_ATTENDANCE} from "../events/eventTypes.const";
+
 
 export default class CalendarController {
 
@@ -132,6 +135,7 @@ export default class CalendarController {
             if (!calendar) {
                 return res.status(404).send();
             }
+            calendarEventEmitter.emit(EVENT_TYPE_NEW_ATTENDANCE, {calendarId: id, userId: req.user.id})
             res.send(calendar);
         } catch (e) {
             res.send(400).send(e);
