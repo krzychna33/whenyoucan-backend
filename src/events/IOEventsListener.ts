@@ -15,9 +15,14 @@ export class IOEventsListener {
             socket.on('join', (params, callback) => {
                 socket.join(params.calendarId);
                 console.log("USER JOINED TO " + params.calendarId)
-                socket.emit("JOINED", {userId: params.userId})
-                callback();
+            });
+
+            socket.on('LEAVE_ROOM', (params) => {
+                socket.leave(params.calendarId)
+                console.log("USER LEAVED " + params.calendarId)
             })
+
+
         });
     }
 }

@@ -7,6 +7,7 @@ import CreateUserDto from "../interfaces/User/CreateUserDto";
 import RequestWithUser from "../interfaces/RequestWithUser";
 import axios from "axios";
 import generator from "generate-password";
+import {AppError} from "../utils/AppError";
 
 
 export default class AuthController {
@@ -35,7 +36,10 @@ export default class AuthController {
                 token
             })
         } catch (e) {
-            res.status(400).send({message: e});
+            res.status(400).send({
+                message: e.message,
+                errors: e.errors
+            });
         }
     }
 
@@ -51,7 +55,7 @@ export default class AuthController {
                         token
                     })
                 } else {
-                    throw new Error("Email is taken");
+                    throw new AppError("Email is taken");
                 }
             } else {
                 const [firstName, lastName] = response.data.name.split(" ");
@@ -64,7 +68,7 @@ export default class AuthController {
                 })
                 const savedUser = await newUser.save();
                 if (!savedUser) {
-                    throw new Error("Failed while saving user to the database.")
+                    throw new AppError("Failed while saving user to the database.")
                 }
                 const token = await savedUser.generateAuthToken();
                 res.send({
@@ -72,7 +76,10 @@ export default class AuthController {
                 });
             }
         } catch (e) {
-            res.status(400).send({message: e.message});
+            res.status(400).send({
+                message: e.message,
+                errors: e.errors
+            });
         }
 
     }
@@ -88,7 +95,10 @@ export default class AuthController {
                 token
             });
         } catch (e) {
-            res.status(400).send(e);
+            res.status(400).send({
+                message: e.message,
+                errors: e.errors
+            });
         }
 
     }
@@ -107,7 +117,10 @@ export default class AuthController {
                 message: "Logged out."
             })
         } catch (e) {
-            res.status(400).send(e);
+            res.status(400).send({
+                message: e.message,
+                errors: e.errors
+            });
         }
     }
 }

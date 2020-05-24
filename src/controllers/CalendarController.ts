@@ -27,8 +27,6 @@ export default class CalendarController {
         this.router.get('/own', forceAuth, this.getOwnCalendars);
         this.router.get('/connected', forceAuth, this.getConnectedCalendars);
 
-        // this.router.get('/connected/:id', auth, this.getConnectedCalendar);
-        // this.router.get('/public/:id', this.getPublicCalendar);
         this.router.get('/:id/users', auth, this.getCalendarConnectedUsers);
         this.router.get('/:id', auth, this.getCalendar);
 
@@ -43,7 +41,8 @@ export default class CalendarController {
         const calendar = new CalendarModel({
             name: body.name,
             ownerId: req.user._id,
-            pin: '1234',
+            pin: body.pin ? body.pin : "",
+            description: body.description ? body.description : "",
             users: [req.user._id],
             reservedAttendances: {
                 user: {
@@ -81,6 +80,7 @@ export default class CalendarController {
     private async getCalendar(expressRequest: express.Request, res: express.Response) {
         const req = expressRequest as RequestWithUser;
         const {id} = req.params;
+        console.log("AU")
 
         if (!ObjectId.isValid(id)) {
             return res.status(400).send();
@@ -138,7 +138,10 @@ export default class CalendarController {
             calendarEventEmitter.emit(EVENT_TYPE_NEW_ATTENDANCE, {calendarId: id, userId: req.user.id})
             res.send(calendar);
         } catch (e) {
-            res.send(400).send(e);
+            res.send(400).send({
+                message: e.message,
+                errors: e.errors
+            });
         }
 
     }
@@ -187,7 +190,10 @@ export default class CalendarController {
                 message: `You joined to calendar with id: ${id}`
             });
         } catch (e) {
-            res.status(400).send();
+            res.status(400).send({
+                message: e.message,
+                errors: e.errors
+            });
         }
 
     }
@@ -204,7 +210,10 @@ export default class CalendarController {
                 results: parsedCalendars
             });
         } catch (e) {
-            res.status(400).send(e);
+            res.status(400).send({
+                message: e.message,
+                errors: e.errors
+            });
         }
     }
 
@@ -232,7 +241,10 @@ export default class CalendarController {
             });
 
         } catch (e) {
-            res.status(400).send(e);
+            res.status(400).send({
+                message: e.message,
+                errors: e.errors
+            });
         }
     }
 }

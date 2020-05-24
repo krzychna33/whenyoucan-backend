@@ -12,7 +12,13 @@ const CalendarSchema = new Schema({
     },
     name: {
         type: String,
-        required: true
+        required: true,
+        maxlength: 24
+    },
+    description : {
+        type: String,
+        required: false,
+        maxlength: 100
     },
     pin: {
         type: String
@@ -45,18 +51,18 @@ CalendarSchema.methods.getConnectedUsers = async function () {
 }
 
 CalendarSchema.methods.getConnected = function () {
-    const {_id, ownerId, name, users, reservedAttendances} = this;
+    const {_id, ownerId, name, users, reservedAttendances, description} = this;
 
     return {
-        _id, ownerId, name, users, reservedAttendances
+        _id, ownerId, name, users, reservedAttendances, description
     }
 };
 
 CalendarSchema.methods.getPublic = function () {
-    const {_id, ownerId, name, users, reservedAttendances} = this;
+    const {_id, ownerId, name, users, reservedAttendances, description} = this;
 
     return {
-        _id, name
+        _id, name, description
     }
 };
 

@@ -15,7 +15,6 @@ const UserSchema = new Schema({
     password: {
         type: String,
         required: true,
-        minlength: 6
     },
     firstName: {
         type: String,
@@ -46,7 +45,7 @@ UserSchema.statics.findByCredentials = function (email: string, password: string
 
     return User.findOne({ email }).then((user: IUser) => {
         if (!user) {
-            return Promise.reject('Bad Credentials');
+            return Promise.reject({message: 'Bad Credentials'});
         }
 
         return new Promise((resolve, reject) => {
@@ -54,7 +53,7 @@ UserSchema.statics.findByCredentials = function (email: string, password: string
                 if (res) {
                     resolve(user);
                 } else {
-                    reject(`Passwords don't match!`);
+                    reject({message: 'Passwords does not match!'});
                 }
             })
         });
@@ -69,7 +68,7 @@ UserSchema.statics.findByToken = function (token: string) {
     try {
         decoded = jwt.verify(token, `${process.env.JWT_SECRET}`);
     } catch (e) {
-        return Promise.reject('Unauthorized');
+        return Promise.reject({message: 'Unauthorized'});
     }
 
     return User.findOne({

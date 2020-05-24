@@ -39,7 +39,7 @@ export function auth(expressRequest: express.Request, res: express.Response, nex
 
         next();
     }).catch((e: any) => {
-        if (e === "Unauthorized") {
+        if (e.message === "Unauthorized") {
             return next();
         }
         res.status(401).send({

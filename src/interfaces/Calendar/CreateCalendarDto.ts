@@ -1,4 +1,6 @@
 
 export interface CreateCalendarDto {
-    name: string
+    name: string,
+    description?: string,
+    pin?: string
 }
