@@ -59,7 +59,7 @@ CalendarSchema.methods.getConnected = function () {
 };
 
 CalendarSchema.methods.getPublic = function () {
-    const {_id, ownerId, name, users, reservedAttendances, description} = this;
+    const {_id, name, description} = this;
 
     return {
         _id, name, description

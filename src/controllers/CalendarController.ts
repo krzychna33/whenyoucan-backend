@@ -5,7 +5,6 @@ import RequestWithUser from "../interfaces/RequestWithUser";
 import {CalendarModel} from "../models/Calendar";
 import {CreateCalendarDto} from "../interfaces/Calendar/CreateCalendarDto";
 import mongoose from "mongoose";
-import {IUserEntity} from "../interfaces/User/User";
 
 const {ObjectId} = mongoose.Types;
 
@@ -32,6 +31,9 @@ export default class CalendarController {
 
         this.router.post('/push-attendances/:id', forceAuth, this.pushAttendances);
         this.router.post('/join/:id', forceAuth, this.joinCalendar);
+
+        this.router.get('/disconnect/:id', forceAuth, this.disconnectCalendar);
+        this.router.delete('/:id', forceAuth, this.deleteCalendar);
     }
 
     private async createCalendar(expressRequest: express.Request, res: express.Response) {
@@ -245,6 +247,78 @@ export default class CalendarController {
                 message: e.message,
                 errors: e.errors
             });
+        }
+    }
+
+    private async disconnectCalendar(expressRequest: express.Request, res: express.Response) {
+        const req = expressRequest as RequestWithUser;
+        const body = req.body;
+        const {id} = req.params;
+
+        try {
+            const calendar = await CalendarModel.findOne({_id: id});
+
+            if (!calendar) {
+                return res.status(404).send();
+            }
+
+            if (calendar.ownerId.toString() === req.user._id.toString()) {
+                return res.status(400).send({
+                    message: "You are owner of this calendar"
+                });
+            }
+
+            if (!calendar.users.includes(req.user._id)) {
+                return res.status(400).send({
+                    message: "You are not in this calendar."
+                });
+            }
+
+            calendar.users = calendar.users.filter((user: any) => {
+                if (user._id.toString() != req.user._id.toString()) {
+                    return user;
+                }
+            });
+
+            calendar.reservedAttendances = calendar.reservedAttendances.filter((attendance) => {
+                if (req.user._id.toString() != attendance.user._id.toString()) {
+                    return attendance;
+                }
+            })
+            await calendar.save();
+            res.send({
+                message: `You has left calendar`
+            });
+        } catch (e) {
+            res.status(400).send({
+                message: e.message,
+                errors: e.errors
+            });
+        }
+    }
+
+    private async deleteCalendar(expressRequest: express.Request, res: express.Response) {
+        const req = expressRequest as RequestWithUser;
+        const {id} = req.params;
+
+        try {
+            const deletedCalendar = await CalendarModel.findOneAndRemove({_id: id, ownerId: req.user._id});
+            console.log(deletedCalendar)
+            if (!deletedCalendar) {
+                res.send({
+                    message: "Calendar not found!",
+                    errors: {}
+                }).status(404)
+            }
+            res.send({
+                message: "Deleted calendar",
+                data: deletedCalendar
+            })
+        } catch (e) {
+            res.send({
+                message: e.message,
+                errors: e.errors
+            }).status(400)
         }
     }
 }
