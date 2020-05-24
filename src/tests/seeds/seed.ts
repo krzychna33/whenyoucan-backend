@@ -36,6 +36,7 @@ export const calendars: ICalendarEntity[] = [
         ownerId: userOneId,
         users: [],
         pin: "1234",
+        description: "",
         reservedAttendances: [
             {
                 user: {
