@@ -14,8 +14,8 @@ export interface ICalendarEntity {
     name: string,
     users: any,
     pin: string,
-    description: string,
-    expectedUsersCount: number,
+    description?: string,
+    expectedUsersCount?: number,
     reservedAttendances: ReservedAttendances[]
 }
 export interface ICalendar extends Document, ICalendarEntity{
