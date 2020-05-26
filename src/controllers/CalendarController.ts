@@ -144,6 +144,7 @@ export default class CalendarController {
 
         try {
             const calendar = await this.calendarService.updateUserAttendances(req.user._id, id, body.times);
+            calendarEventEmitter.emit(EVENT_TYPE_NEW_ATTENDANCE, {calendarId: id, userId: req.user.id});
             res.send(calendar)
         } catch (e) {
             res.status(400).send({
