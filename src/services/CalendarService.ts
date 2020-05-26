@@ -14,6 +14,7 @@ export default class CalendarService {
             name: body.name,
             ownerId: user._id,
             pin: body.pin ? body.pin : "",
+            expectedUsersCount: body.expectedUsersCount,
             description: body.description ? body.description : "",
             users: [user._id],
             reservedAttendances: {

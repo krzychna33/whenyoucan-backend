@@ -20,6 +20,10 @@ const CalendarSchema = new Schema({
         required: false,
         maxlength: 100
     },
+    expectedUsersCount: {
+        type: Number,
+        required: false
+    },
     pin: {
         type: String
     },
@@ -51,10 +55,10 @@ CalendarSchema.methods.getConnectedUsers = async function () {
 }
 
 CalendarSchema.methods.getConnected = function () {
-    const {_id, ownerId, name, users, reservedAttendances, description} = this;
+    const {_id, ownerId, name, users, reservedAttendances, description, expectedUsersCount} = this;
 
     return {
-        _id, ownerId, name, users, reservedAttendances, description
+        _id, ownerId, name, users, reservedAttendances, description, expectedUsersCount
     }
 };
 
