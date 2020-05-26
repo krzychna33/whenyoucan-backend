@@ -2,6 +2,9 @@ import {CalendarModel} from "../models/Calendar";
 import {IUser} from "../interfaces/User/User";
 import {CreateCalendarDto} from "../interfaces/Calendar/CreateCalendarDto";
 import {AppError} from "../utils/AppError";
+import mongoose from "mongoose";
+const {ObjectId} = mongoose.Types;
+
 
 export default class CalendarService {
 
@@ -25,7 +28,7 @@ export default class CalendarService {
         try {
             return await calendar.save();
         } catch (e) {
-            throw new AppError(e.message, e.errors);
+            throw new AppError(e.message, 400, e.errors);
         }
     }
 
@@ -36,11 +39,16 @@ export default class CalendarService {
             });
             return calendars;
         } catch (e) {
-            throw new AppError(e.message, e.errors)
+            throw new AppError(e.message, 400, e.errors)
         }
     }
 
     public updateUserAttendances = async (userId: string, calendarId: string, times: any) => {
+
+        if (!ObjectId.isValid(calendarId)) {
+            throw new AppError('Calendar id is not valid ObjectId!', 500);
+        }
+
         try {
             const calendar = await CalendarModel.findOneAndUpdate(
                 {_id: calendarId, users: userId},
@@ -49,13 +57,13 @@ export default class CalendarService {
             );
 
             if (!calendar) {
-                throw new AppError('Calendar not found!')
+                throw new AppError('Calendar not found!', 404)
             }
 
             return calendar;
 
         } catch (e) {
-            throw new AppError(e.message, e.errors)
+            throw new AppError(e.message, e.status, e.errors)
         }
     }
 }

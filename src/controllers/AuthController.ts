@@ -36,7 +36,7 @@ export default class AuthController {
                 token
             })
         } catch (e) {
-            res.status(400).send({
+            res.status(e.status || 400).send({
                 message: e.message,
                 errors: e.errors
             });
@@ -55,7 +55,7 @@ export default class AuthController {
                         token
                     })
                 } else {
-                    throw new AppError("Email is taken");
+                    throw new AppError("Email is taken", 400);
                 }
             } else {
                 const [firstName, lastName] = response.data.name.split(" ");
@@ -68,7 +68,7 @@ export default class AuthController {
                 })
                 const savedUser = await newUser.save();
                 if (!savedUser) {
-                    throw new AppError("Failed while saving user to the database.")
+                    throw new AppError("Failed while saving user to the database.", 500)
                 }
                 const token = await savedUser.generateAuthToken();
                 res.send({
@@ -76,7 +76,7 @@ export default class AuthController {
                 });
             }
         } catch (e) {
-            res.status(400).send({
+            res.status(e.status || 400).send({
                 message: e.message,
                 errors: e.errors
             });
@@ -95,7 +95,7 @@ export default class AuthController {
                 token
             });
         } catch (e) {
-            res.status(400).send({
+            res.status(e.status || 400).send({
                 message: e.message,
                 errors: e.errors
             });
@@ -117,7 +117,7 @@ export default class AuthController {
                 message: "Logged out."
             })
         } catch (e) {
-            res.status(400).send({
+            res.status(e.status || 400).send({
                 message: e.message,
                 errors: e.errors
             });

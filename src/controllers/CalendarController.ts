@@ -31,7 +31,7 @@ export default class CalendarController {
         this.router.get('/connected', forceAuth, this.getConnectedCalendars);
         this.router.get('/:id/users', auth, this.getCalendarConnectedUsers);
         this.router.get('/:id', auth, this.getCalendar);
-        this.router.post('/push-attendances/:id', forceAuth, this.pushAttendances);
+        // this.router.post('/push-attendances/:id', forceAuth, this.pushAttendances);
         this.router.post('/update-attendances/:id', forceAuth, this.updateAttendances);
         this.router.post('/join/:id', forceAuth, this.joinCalendar);
         this.router.get('/disconnect/:id', forceAuth, this.disconnectCalendar);
@@ -113,29 +113,29 @@ export default class CalendarController {
         }
     }
 
-    private async pushAttendances(expressRequest: express.Request, res: express.Response) {
-        const req = expressRequest as RequestWithUser;
-        const body = req.body;
-        const {id} = req.params;
-
-        try {
-            const calendar = await CalendarModel.findOneAndUpdate(
-                {_id: id, users: req.user._id},
-                {$push: {"reservedAttendances.$[outer].times": {$each: body.times}}},
-                {arrayFilters: [{"outer.user._id": req.user._id}]}
-            );
-            if (!calendar) {
-                return res.status(404).send();
-            }
-            calendarEventEmitter.emit(EVENT_TYPE_NEW_ATTENDANCE, {calendarId: id, userId: req.user.id})
-            res.send(calendar);
-        } catch (e) {
-            res.send(400).send({
-                message: e.message,
-                errors: e.errors
-            });
-        }
-    }
+    // private async pushAttendances(expressRequest: express.Request, res: express.Response) {
+    //     const req = expressRequest as RequestWithUser;
+    //     const body = req.body;
+    //     const {id} = req.params;
+    //
+    //     try {
+    //         const calendar = await CalendarModel.findOneAndUpdate(
+    //             {_id: id, users: req.user._id},
+    //             {$push: {"reservedAttendances.$[outer].times": {$each: body.times}}},
+    //             {arrayFilters: [{"outer.user._id": req.user._id}]}
+    //         );
+    //         if (!calendar) {
+    //             return res.status(404).send();
+    //         }
+    //         calendarEventEmitter.emit(EVENT_TYPE_NEW_ATTENDANCE, {calendarId: id, userId: req.user.id})
+    //         res.send(calendar);
+    //     } catch (e) {
+    //         res.send(400).send({
+    //             message: e.message,
+    //             errors: e.errors
+    //         });
+    //     }
+    // }
 
     private updateAttendances = async (expressRequest: express.Request, res: express.Response) => {
         const req = expressRequest as RequestWithUser;
@@ -147,7 +147,7 @@ export default class CalendarController {
             calendarEventEmitter.emit(EVENT_TYPE_NEW_ATTENDANCE, {calendarId: id, userId: req.user.id});
             res.send(calendar)
         } catch (e) {
-            res.status(400).send({
+            res.status(e.status || 400).send({
                 message: e.message,
                 errors: e.errors
             });

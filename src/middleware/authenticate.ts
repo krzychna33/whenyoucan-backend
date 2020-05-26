@@ -19,8 +19,9 @@ export function forceAuth(expressRequest: express.Request, res: express.Response
 
         next();
     }).catch((e: any) => {
-        res.status(401).send({
-            message: e
+        res.status(e.status || 400).send({
+            message: e.message,
+            errors: e.errors
         });
     })
 };
@@ -42,8 +43,9 @@ export function auth(expressRequest: express.Request, res: express.Response, nex
         if (e.message === "Unauthorized") {
             return next();
         }
-        res.status(401).send({
-            message: e
+        res.status(e.status || 400).send({
+            message: e.message,
+            errors: e.errors
         });
     })
 }

@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 
 import {IUser, IUserEntityPublic, IUserSchema} from "../interfaces/User/User";
+import {AppError} from "../utils/AppError";
 
 const UserSchema = new Schema({
     email: {
@@ -45,7 +46,7 @@ UserSchema.statics.findByCredentials = function (email: string, password: string
 
     return User.findOne({ email }).then((user: IUser) => {
         if (!user) {
-            return Promise.reject({message: 'Bad Credentials'});
+            return Promise.reject(new AppError("Bad credentials", 404));
         }
 
         return new Promise((resolve, reject) => {
@@ -53,7 +54,7 @@ UserSchema.statics.findByCredentials = function (email: string, password: string
                 if (res) {
                     resolve(user);
                 } else {
-                    reject({message: 'Passwords does not match!'});
+                    reject(new AppError("Bad password!", 400));
                 }
             })
         });
@@ -68,7 +69,7 @@ UserSchema.statics.findByToken = function (token: string) {
     try {
         decoded = jwt.verify(token, `${process.env.JWT_SECRET}`);
     } catch (e) {
-        return Promise.reject({message: 'Unauthorized'});
+        return Promise.reject(new AppError("Unauthorized", 401));
     }
 
     return User.findOne({
