@@ -5,76 +5,67 @@ import RequestWithUser from "../interfaces/RequestWithUser";
 import {CalendarModel} from "../models/Calendar";
 import {CreateCalendarDto} from "../interfaces/Calendar/CreateCalendarDto";
 import mongoose from "mongoose";
+import CalendarService from "../services/CalendarService";
+
 
 const {ObjectId} = mongoose.Types;
 
 import {calendarEventEmitter} from "../events/calendarEvents"
 import {EVENT_TYPE_NEW_ATTENDANCE} from "../events/eventTypes.const";
+import {AppError} from "../utils/AppError";
 
 
 export default class CalendarController {
 
     public router: express.Router = express.Router();
+    private calendarService: CalendarService;
 
-    constructor() {
+    constructor(calendarService: CalendarService) {
+        this.calendarService = calendarService;
         this.initRoutes();
     }
 
     public initRoutes() {
         this.router.post('/', forceAuth, this.createCalendar);
-
         this.router.get('/own', forceAuth, this.getOwnCalendars);
         this.router.get('/connected', forceAuth, this.getConnectedCalendars);
-
         this.router.get('/:id/users', auth, this.getCalendarConnectedUsers);
         this.router.get('/:id', auth, this.getCalendar);
-
         this.router.post('/push-attendances/:id', forceAuth, this.pushAttendances);
+        this.router.post('/update-attendances/:id', forceAuth, this.updateAttendances);
         this.router.post('/join/:id', forceAuth, this.joinCalendar);
-
         this.router.get('/disconnect/:id', forceAuth, this.disconnectCalendar);
         this.router.delete('/:id', forceAuth, this.deleteCalendar);
     }
 
-    private async createCalendar(expressRequest: express.Request, res: express.Response) {
+    private createCalendar = async (expressRequest: express.Request, res: express.Response) => {
         const req = expressRequest as RequestWithUser;
         const body: CreateCalendarDto = req.body;
 
-        const calendar = new CalendarModel({
-            name: body.name,
-            ownerId: req.user._id,
-            pin: body.pin ? body.pin : "",
-            description: body.description ? body.description : "",
-            users: [req.user._id],
-            reservedAttendances: {
-                user: {
-                    firstName: req.user.firstName,
-                    _id: req.user._id
-                },
-                times: []
-            }
-        });
-
         try {
-            const savedCalendar = await calendar.save();
+            const savedCalendar = await this.calendarService.createNewCalendar(body, req.user);
             res.send(savedCalendar);
         } catch (e) {
-            res.status(400).send(e);
+            res.status(400).send({
+                message: e.message,
+                errors: e.errors
+            });
         }
     }
 
-    private async getOwnCalendars(expressRequest: express.Request, res: express.Response) {
+    private getOwnCalendars = async (expressRequest: express.Request, res: express.Response) => {
         const req = expressRequest as RequestWithUser;
 
         try {
-            const calendars = await CalendarModel.find({
-                ownerId: req.user._id
-            });
+            const calendars = await this.calendarService.getOwnCalendars(req.user._id);
             res.send({
                 results: calendars
             })
         } catch (e) {
-            res.status(400).send(e);
+            res.status(400).send({
+                message: e.message,
+                errors: e.errors
+            });
         }
 
     }
@@ -82,7 +73,6 @@ export default class CalendarController {
     private async getCalendar(expressRequest: express.Request, res: express.Response) {
         const req = expressRequest as RequestWithUser;
         const {id} = req.params;
-        console.log("AU")
 
         if (!ObjectId.isValid(id)) {
             return res.status(400).send();
@@ -145,7 +135,22 @@ export default class CalendarController {
                 errors: e.errors
             });
         }
+    }
 
+    private updateAttendances = async (expressRequest: express.Request, res: express.Response) => {
+        const req = expressRequest as RequestWithUser;
+        const body = req.body;
+        const {id} = req.params;
+
+        try {
+            const calendar = await this.calendarService.updateUserAttendances(req.user._id, id, body.times);
+            res.send(calendar)
+        } catch (e) {
+            res.status(400).send({
+                message: e.message,
+                errors: e.errors
+            });
+        }
     }
 
     private async joinCalendar(expressRequest: express.Request, res: express.Response) {
