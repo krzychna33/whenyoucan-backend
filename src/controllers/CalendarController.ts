@@ -70,46 +70,18 @@ export default class CalendarController {
 
     }
 
-    private async getCalendar(expressRequest: express.Request, res: express.Response) {
+    private getCalendar = async (expressRequest: express.Request, res: express.Response) => {
         const req = expressRequest as RequestWithUser;
         const {id} = req.params;
 
-        if (!ObjectId.isValid(id)) {
-            return res.status(400).send();
-        }
-
         try {
-            const calendar = await CalendarModel.findOne({
-                _id: id
-            });
-
-            if (!calendar) {
-                return res.status(404).send({
-                    message: "Not found"
-                })
-            }
-
-            if (!req.user) {
-                return res.send(calendar.getPublic());
-            }
-
-            if (req.user && req.user._id.toString() === calendar.ownerId.toString()) {
-                return res.send(calendar)
-            }
-
-            const isUserConnected = calendar.reservedAttendances.findIndex((item) => {
-                if (item.user._id.toString() === req.user._id.toString()) {
-                    return item;
-                }
-            });
-
-            if (isUserConnected !== -1) {
-                return res.send(calendar.getConnected());
-            }
-
-            res.send(calendar.getPublic());
+            const calendar = await this.calendarService.getCalendarWithCorrectPermissions(req.user, id);
+            res.send(calendar);
         } catch (e) {
-            res.send(400).send(e);
+            return res.status(e.status || 400 ).send({
+                message: e.message,
+                errors: e.errors
+            });
         }
     }
 
@@ -309,7 +281,6 @@ export default class CalendarController {
 
         try {
             const deletedCalendar = await CalendarModel.findOneAndRemove({_id: id, ownerId: req.user._id});
-            console.log(deletedCalendar)
             if (!deletedCalendar) {
                 res.send({
                     message: "Calendar not found!",

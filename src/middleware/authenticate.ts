@@ -29,7 +29,6 @@ export function forceAuth(expressRequest: express.Request, res: express.Response
 export function auth(expressRequest: express.Request, res: express.Response, next: express.NextFunction) {
     const req = expressRequest as RequestWithUser;
     const token = req.header('x-auth') as string;
-    console.log("abcd")
 
 
     UserModel.findByToken(token).then((user: IUser) => {

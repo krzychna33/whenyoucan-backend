@@ -12,7 +12,7 @@ export interface ICalendarEntity {
     _id: any,
     ownerId: any
     name: string,
-    users: any,
+    users: string[],
     pin: string,
     description?: string,
     expectedUsersCount?: number,

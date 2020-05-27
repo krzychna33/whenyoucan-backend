@@ -3,6 +3,7 @@ import {IUser} from "../interfaces/User/User";
 import {CreateCalendarDto} from "../interfaces/Calendar/CreateCalendarDto";
 import {AppError} from "../utils/AppError";
 import mongoose from "mongoose";
+
 const {ObjectId} = mongoose.Types;
 
 
@@ -35,10 +36,9 @@ export default class CalendarService {
 
     public getOwnCalendars = async (userId: string) => {
         try {
-            const calendars = await CalendarModel.find({
+            return await CalendarModel.find({
                 ownerId: userId
             });
-            return calendars;
         } catch (e) {
             throw new AppError(e.message, 400, e.errors)
         }
@@ -65,6 +65,44 @@ export default class CalendarService {
 
         } catch (e) {
             throw new AppError(e.message, e.status, e.errors)
+        }
+    }
+
+    public getCalendarWithCorrectPermissions = async (user: IUser, calendarId: string) => {
+        if (!ObjectId.isValid(calendarId)) {
+            throw new AppError("Invalid CalendarId", 404);
+        }
+
+        try {
+            const calendar = await CalendarModel.findOne({
+                _id: calendarId
+            });
+
+            if (!calendar) {
+                throw new AppError("Calendar with this id not found!", 404);
+            }
+
+            if (!user) {
+                return calendar.getPublic();
+            }
+
+            if (user && user._id.toString() === calendar.ownerId.toString()) {
+                return calendar;
+            }
+
+            const isUserConnected = calendar.reservedAttendances.findIndex((item) => {
+                if (item.user._id.toString() === user._id.toString()) {
+                    return item;
+                }
+            });
+
+            if (isUserConnected !== -1) {
+                return calendar.getConnected();
+            }
+
+            return calendar.getPublic();
+        } catch (e) {
+            throw new AppError(e.message, e.status, e.errors);
         }
     }
 }
