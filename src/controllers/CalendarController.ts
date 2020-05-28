@@ -37,6 +37,7 @@ export default class CalendarController {
         this.router.delete('/:id', forceAuth, this.deleteCalendar);
 
         // this.router.post('/push-attendances/:id', forceAuth, this.pushAttendances);
+        // tl
     }
 
     private createCalendar = async (expressRequest: express.Request, res: express.Response) => {
