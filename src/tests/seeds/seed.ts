@@ -62,7 +62,7 @@ export const calendars: ICalendarEntity[] = [
         _id: calendarOneId,
         name: "Seeder Calendar 1",
         ownerId: userOneId,
-        users: [userTwoId.toString()],
+        users: [userTwoId.toString(), userOneId.toString()],
         pin: "1234",
         description: "",
         reservedAttendances: [

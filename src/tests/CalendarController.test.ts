@@ -4,6 +4,9 @@ import request from "supertest";
 import {calendars, pushCalendarsToDb, pushUsersToDb, users} from "./seeds/seed";
 import {app} from "../server";
 import {CalendarModel} from "../models/Calendar";
+import moment from "moment";
+import UserModel from "../models/User";
+import {ICalendar} from "../interfaces/Calendar/Calendar";
 
 const expressApp = app.app;
 
@@ -121,6 +124,88 @@ describe('CalendarController', () => {
                 expect(res.body).to.not.include.keys(['pin', 'users', 'reservedAttendances']);
             })
             .end(done)
+    });
+
+    it("Should update attendances (Adding as Owner)", (done) => {
+
+        const times = [
+            moment().toISOString(),
+            moment().add(2, "days").toISOString()
+        ]
+
+
+        request(expressApp)
+            .post(`/weekly-calendars/update-attendances/${calendars[0]._id}`)
+            .set('x-auth', users[0].tokens[0].token)
+            .send({times})
+            .expect(200)
+            .end((err, res) => {
+                CalendarModel.findOne({_id: calendars[0]._id}).then((calendar) => {
+                    if (!calendar) {
+                        return done();
+                    }
+
+                    expect(calendar.reservedAttendances[1].times.length).to.equal(calendars[0].reservedAttendances[1].times.length)
+                    expect(calendar.reservedAttendances[0].times.length).to.equal(times.length);
+                })
+                done();
+            })
+
+    });
+
+    it("Should update attendances (Adding as Connected user)", (done) => {
+
+        const times = [
+            moment().toISOString(),
+            moment().add(2, "days").toISOString()
+        ]
+
+
+        request(expressApp)
+            .post(`/weekly-calendars/update-attendances/${calendars[0]._id}`)
+            .set('x-auth', users[1].tokens[0].token)
+            .send({times})
+            .expect(200)
+            .end((err, res) => {
+                CalendarModel.findOne({_id: calendars[0]._id}).then((calendar) => {
+                    if (!calendar) {
+                        return done();
+                    }
+
+                    expect(calendar.reservedAttendances[0].times.length).to.equal(calendars[0].reservedAttendances[1].times.length)
+                    expect(calendar.reservedAttendances[1].times.length).to.equal(times.length);
+                })
+                done();
+            })
+
+    });
+
+    it("Should NOT update attendances (Adding as NOT connected user)", (done) => {
+
+        const times = [
+            moment().toISOString(),
+            moment().add(2, "days").toISOString()
+        ]
+
+
+        request(expressApp)
+            .post(`/weekly-calendars/update-attendances/${calendars[0]._id}`)
+            .set('x-auth', users[2].tokens[0].token)
+            .send({times})
+            .expect(400)
+            .end((err, res) => {
+                CalendarModel.findOne({_id: calendars[0]._id}).then((calendar) => {
+                    if (!calendar) {
+                        return done();
+                    }
+
+                    expect(calendar.reservedAttendances).to.deep.equal(calendars[0].reservedAttendances)
+                    done();
+                }).catch((e) => {
+                    done();
+                })
+            })
+
     });
 
 });
