@@ -1,4 +1,4 @@
-### WhenYouCan - Backend
+# WhenYouCan - Backend
 
 ### About 
 
@@ -13,6 +13,6 @@ Concept and whole app is created by @krzychna33.
 
 ### Tech Stack
 
-Backend is written with TypeScript, node.js and Express. MonogoDB is the app database.
-There are some tests for CalendarsController, in the nearest future there will be other test introducted,
-To get satisfactory test coverage.
+**Backend is written with TypeScript, node.js and Express. MonogoDB is the app database.**\
+There are some tests for CalendarsController, in the nearest future there will be other test introduced
+to get satisfactory test coverage.
