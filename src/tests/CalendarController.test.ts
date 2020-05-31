@@ -5,8 +5,6 @@ import {calendars, pushCalendarsToDb, pushUsersToDb, users} from "./seeds/seed";
 import {app} from "../server";
 import {CalendarModel} from "../models/Calendar";
 import moment from "moment";
-import UserModel from "../models/User";
-import {ICalendar} from "../interfaces/Calendar/Calendar";
 
 const expressApp = app.app;
 
@@ -186,7 +184,6 @@ describe('CalendarController', () => {
             moment().toISOString(),
             moment().add(2, "days").toISOString()
         ]
-
 
         request(expressApp)
             .post(`/weekly-calendars/update-attendances/${calendars[0]._id}`)

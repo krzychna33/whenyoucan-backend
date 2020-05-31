@@ -12,7 +12,6 @@ const {ObjectId} = mongoose.Types;
 
 import {calendarEventEmitter} from "../events/calendarEvents"
 import {EVENT_TYPE_NEW_ATTENDANCE} from "../events/eventTypes.const";
-import {AppError} from "../utils/AppError";
 
 
 export default class CalendarController {
@@ -37,7 +36,6 @@ export default class CalendarController {
         this.router.delete('/:id', forceAuth, this.deleteCalendar);
 
         // this.router.post('/push-attendances/:id', forceAuth, this.pushAttendances);
-        // tl
     }
 
     private createCalendar = async (expressRequest: express.Request, res: express.Response) => {
@@ -104,6 +102,12 @@ export default class CalendarController {
         }
     }
 
+    /***
+     * @TODO Move logic to Service and make unit tests for this method
+     * @param expressRequest
+     * @param res
+     */
+
     private async joinCalendar(expressRequest: express.Request, res: express.Response) {
         const req = expressRequest as RequestWithUser;
         const body = req.body;
@@ -156,6 +160,12 @@ export default class CalendarController {
 
     }
 
+    /***
+     * @TODO Move logic to Service and make unit tests for this method
+     * @param expressRequest
+     * @param res
+     */
+
     private async getConnectedCalendars(expressRequest: express.Request, res: express.Response) {
         const req = expressRequest as RequestWithUser;
 
@@ -174,6 +184,12 @@ export default class CalendarController {
             });
         }
     }
+
+    /***
+     * @TODO Move logic to Service and make unit tests for this method
+     * @param expressRequest
+     * @param res
+     */
 
     public async getCalendarConnectedUsers(expressRequest: express.Request, res: express.Response) {
         const req = expressRequest as RequestWithUser;
@@ -205,6 +221,12 @@ export default class CalendarController {
             });
         }
     }
+
+    /***
+     * @TODO Move logic to Service and make unit tests for this method
+     * @param expressRequest
+     * @param res
+     */
 
     private async disconnectCalendar(expressRequest: express.Request, res: express.Response) {
         const req = expressRequest as RequestWithUser;
@@ -252,6 +274,12 @@ export default class CalendarController {
             });
         }
     }
+
+    /***
+     * @TODO Move logic to Service and make unit tests for this method
+     * @param expressRequest
+     * @param res
+     */
 
     private async deleteCalendar(expressRequest: express.Request, res: express.Response) {
         const req = expressRequest as RequestWithUser;
