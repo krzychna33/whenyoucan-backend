@@ -10,7 +10,7 @@ import socketIO from "socket.io";
 import AuthController from "./controllers/AuthController";
 import mongoose from "mongoose";
 import CalendarController from "./controllers/CalendarController";
-import CalendarService from "./services/CalendarService"
+import {Injector} from "./utils/DependencyInjector";
 
 const port = process.env.PORT || 3000;
 
@@ -82,7 +82,7 @@ export const app: App = new App([
     },
     {
         route: "/weekly-calendars",
-        controller: new CalendarController(new CalendarService())
+        controller: Injector.resolve(CalendarController)
     }
 ], port);
 
