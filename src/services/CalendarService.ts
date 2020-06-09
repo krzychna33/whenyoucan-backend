@@ -3,9 +3,9 @@ import {IUser} from "../interfaces/User/User";
 import {CreateCalendarDto} from "../interfaces/Calendar/CreateCalendarDto";
 import {AppError} from "../utils/AppError";
 import mongoose from "mongoose";
-import {Injectable} from "../utils/DependencyInjector";
 
 const {ObjectId} = mongoose.Types;
+
 
 export default class CalendarService {
 
