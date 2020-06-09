@@ -101,57 +101,18 @@ export default class CalendarController {
         }
     }
 
-    /***
-     * @TODO Move logic to Service and make unit tests for this method
-     * @param expressRequest
-     * @param res
-     */
-
-    private async joinCalendar(expressRequest: express.Request, res: express.Response) {
+    private joinCalendar = async (expressRequest: express.Request, res: express.Response) => {
         const req = expressRequest as RequestWithUser;
         const body = req.body;
         const {id} = req.params;
 
         try {
-            const calendar = await CalendarModel.findOne({_id: id});
-
-            if (!calendar) {
-                return res.status(404).send();
-            }
-
-            if (calendar.pin !== body.pin) {
-                return res.status(401).send({
-                    message: "Wrong pin"
-                });
-            }
-
-            if (calendar.ownerId.toString() === req.user._id.toString()) {
-                return res.status(400).send({
-                    message: "You are owner of this calendar"
-                });
-            }
-
-            if (calendar.users.includes(req.user._id)) {
-                return res.status(400).send({
-                    message: "You are already in this calendar."
-                });
-            }
-
-            calendar.users.push(req.user._id);
-            calendar.reservedAttendances.push({
-                user: {
-                    firstName: req.user.firstName,
-                    _id: req.user._id
-                },
-                times: []
-            });
-
-            await calendar.save();
+            await this.calendarService.joinToCalendar(req.user, body.pin, id);
             res.send({
                 message: `You joined to calendar with id: ${id}`
             });
         } catch (e) {
-            res.status(400).send({
+            res.status(e.status || 400).send({
                 message: e.message,
                 errors: e.errors
             });

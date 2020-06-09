@@ -1,5 +1,5 @@
 import {CalendarModel} from "../models/Calendar";
-import {IUser} from "../interfaces/User/User";
+import {IUser, IUserEntity} from "../interfaces/User/User";
 import {CreateCalendarDto} from "../interfaces/Calendar/CreateCalendarDto";
 import {AppError} from "../utils/AppError";
 import mongoose from "mongoose";
@@ -104,5 +104,45 @@ export default class CalendarService {
         } catch (e) {
             throw new AppError(e.message, e.status, e.errors);
         }
+    }
+
+    public joinToCalendar = async (user: IUserEntity, pin: string, calendarId: string) => {
+
+        try {
+            const calendar = await CalendarModel.findOne({_id: calendarId});
+
+            if (!calendar) {
+                throw new AppError("Calendar with this id not found!", 404);
+            }
+
+            if (calendar.pin !== pin) {
+                throw new AppError("PIN is wrong", 401);
+            }
+
+            if (calendar.ownerId.toString() === user._id.toString()) {
+                throw new AppError("You are owner of this calendar", 400);
+            }
+
+            if (calendar.users.includes(user._id)) {
+                throw new AppError("You are already in this calendar", 400);
+            }
+
+            calendar.users.push(user._id);
+            calendar.reservedAttendances.push({
+                user: {
+                    firstName: user.firstName,
+                    _id: user._id
+                },
+                times: []
+            });
+
+            await calendar.save();
+        } catch (e) {
+            throw new AppError(e.message, e.status, e.errors);
+        }
+    }
+
+    public getConnectedCalendars = async () => {
+        //
     }
 }

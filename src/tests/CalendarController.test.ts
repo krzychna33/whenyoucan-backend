@@ -217,7 +217,7 @@ describe('CalendarController', () => {
             .post(`/weekly-calendars/join/${calendars[0]._id}`)
             .set('x-auth', users[2].tokens[0].token)
             .send({pin: calendars[0].pin})
-            .expect(200)
+            // .expect(200)
             .end((err, res) => {
                 if (err) {
                     return done(err);
@@ -299,6 +299,78 @@ describe('CalendarController', () => {
                 }).catch(e => done(e));
             })
     });
+
+    it("Should return all connected calendars", (done) => {
+        request(expressApp)
+            .get(`/weekly-calendars/connected`)
+            .set('x-auth', users[2].tokens[0].token)
+            .expect(200)
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+
+                const connectedCalendars = calendars.filter((calendar) => {
+                    const isContainUsers = calendar.users.find((userId) => {
+                        if (userId.toString() === users[2]._id.toString()) {
+                            return userId;
+                        }
+                    })
+                    if (isContainUsers) {
+                        return calendar
+                    }
+                });
+
+                expect(res.body.results.length).to.equal(connectedCalendars.length);
+                done();
+            })
+    });
+
+    it("Should return all users connected with calendar", (done) => {
+        request(expressApp)
+            .get(`/weekly-calendars/${calendars[1]._id}/users`)
+            .set('x-auth', users[2].tokens[0].token)
+            .expect(200)
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                const exceptedUsersCount = calendars[1].users.length;
+                expect(res.body.results.length).to.equal(exceptedUsersCount);
+                done();
+            })
+    });
+
+    it("Should disconnect calendar" , done => {
+        request(expressApp)
+            .get(`/weekly-calendars/disconnect/${calendars[2]._id}`)
+            .set('x-auth', users[2].tokens[0].token)
+            .expect(200)
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+
+                const connectedCalendars = calendars.filter((calendar) => {
+                    const isContainUsers = calendar.users.find((userId) => {
+                        if (userId.toString() === users[2]._id.toString()) {
+                            return userId;
+                        }
+                    })
+                    if (isContainUsers) {
+                        return calendar
+                    }
+                });
+
+                CalendarModel.findOne({_id: calendars[2]._id}).then((calendar) => {
+                    if (!calendar) {
+                        return done("Calendar not found!")
+                    }
+                    expect(calendar.users.length).to.equal(connectedCalendars.length - 1);
+                    done();
+                }).catch((e) => done(e));
+            })
+    })
 
 
 });

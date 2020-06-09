@@ -56,6 +56,8 @@ export const users: IUserEntity[] = [
 ];
 
 const calendarOneId = new ObjectId();
+const calendarTwoId = new ObjectId();
+const calendarThreeId = new ObjectId();
 
 export const calendars: ICalendarEntity[] = [
     {
@@ -81,6 +83,61 @@ export const calendars: ICalendarEntity[] = [
                 times: []
             }
         ]
+    },
+    {
+        _id: calendarTwoId,
+        name: "Seeder Calendar 2",
+        ownerId: userTwoId,
+        users: [userTwoId.toString(), userThreeId.toString(), userOneId.toString()],
+        pin: "1234",
+        description: "",
+        reservedAttendances: [
+            {
+                user: {
+                    _id: userTwoId.toString(),
+                    firstName: users[1].firstName
+                },
+                times: []
+            },
+            {
+                user: {
+                    _id: userThreeId.toString(),
+                    firstName: users[2].firstName
+                },
+                times: []
+            },
+            {
+                user: {
+                    _id: userOneId.toString(),
+                    firstName: users[0].firstName
+                },
+                times: []
+            }
+        ]
+    },
+    {
+        _id: calendarThreeId,
+        name: "Seeder Calendar 3",
+        ownerId: userTwoId,
+        users: [userTwoId.toString(), userThreeId.toString()],
+        pin: "1234",
+        description: "",
+        reservedAttendances: [
+            {
+                user: {
+                    _id: userTwoId.toString(),
+                    firstName: users[1].firstName
+                },
+                times: []
+            },
+            {
+                user: {
+                    _id: userThreeId.toString(),
+                    firstName: users[2].firstName
+                },
+                times: []
+            }
+        ]
     }
 ];
 
@@ -99,7 +156,9 @@ export const pushUsersToDb = (done: Mocha.Done) => {
 export const pushCalendarsToDb = (done: Mocha.Done) => {
     CalendarModel.deleteMany({}).then(() => {
         const calendar1 = new CalendarModel(calendars[0]).save();
-        return Promise.all([calendar1]);
+        const calendar2 = new CalendarModel(calendars[1]).save();
+        const calendar3 = new CalendarModel(calendars[2]).save();
+        return Promise.all([calendar1, calendar2, calendar3]);
     }).then(() => {
         done();
     })
