@@ -13,7 +13,6 @@ const {ObjectId} = mongoose.Types;
 import {calendarEventEmitter} from "../events/calendarEvents"
 import {EVENT_TYPE_NEW_ATTENDANCE} from "../events/eventTypes.const";
 
-
 export default class CalendarController {
 
     public router: express.Router = express.Router();

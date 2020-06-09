@@ -8,7 +8,7 @@ You can learn more about the whole app on the [frontend repository](https://gith
 ***WhenYouCan is an app to organize events and meeting (and whatever you want). 
 It solves a problem with choosing suitable times in group of people.***
 
-Concept and whole app has been created by @krzychna33.
+Concept and whole app has been created by [@krzychna33](http://krzychnadev.ovh/).
 **App is still under development, so probably there are a lot of things to fix.**
 
 ### Tech Stack
