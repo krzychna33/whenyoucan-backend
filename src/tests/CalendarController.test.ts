@@ -138,15 +138,18 @@ describe('CalendarController', () => {
             .send({times})
             .expect(200)
             .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
                 CalendarModel.findOne({_id: calendars[0]._id}).then((calendar) => {
                     if (!calendar) {
-                        return done();
+                        return done("Not found!");
                     }
 
                     expect(calendar.reservedAttendances[1].times.length).to.equal(calendars[0].reservedAttendances[1].times.length)
                     expect(calendar.reservedAttendances[0].times.length).to.equal(times.length);
-                })
-                done();
+                    done();
+                }).catch(e => done(e))
             })
 
     });
@@ -165,15 +168,20 @@ describe('CalendarController', () => {
             .send({times})
             .expect(200)
             .end((err, res) => {
+                if(err) {
+                    return done(err);
+                }
+
                 CalendarModel.findOne({_id: calendars[0]._id}).then((calendar) => {
                     if (!calendar) {
-                        return done();
+                        return done("Not found!");
                     }
 
-                    expect(calendar.reservedAttendances[0].times.length).to.equal(calendars[0].reservedAttendances[1].times.length)
+                    expect(calendar.reservedAttendances[0].times.length).to.equal(calendars[0].reservedAttendances[0].times.length)
                     expect(calendar.reservedAttendances[1].times.length).to.equal(times.length);
-                })
-                done();
+                    done();
+                }).catch(e => done(e))
+
             })
 
     });
@@ -193,7 +201,7 @@ describe('CalendarController', () => {
             .end((err, res) => {
                 CalendarModel.findOne({_id: calendars[0]._id}).then((calendar) => {
                     if (!calendar) {
-                        return done();
+                        return done("Not found!");
                     }
 
                     expect(calendar.reservedAttendances).to.deep.equal(calendars[0].reservedAttendances)
@@ -202,7 +210,95 @@ describe('CalendarController', () => {
                     done();
                 })
             })
-
     });
+
+    it("Should join user to calendar" , (done) => {
+        request(expressApp)
+            .post(`/weekly-calendars/join/${calendars[0]._id}`)
+            .set('x-auth', users[2].tokens[0].token)
+            .send({pin: calendars[0].pin})
+            .expect(200)
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+
+                CalendarModel.findOne({_id: calendars[0]._id}).then((calendar) => {
+                    if (!calendar) {
+                        return done("Not found!");
+                    }
+                    expect(calendar.users).to.include.members([users[2]._id]);
+                    expect(calendar.users.length).to.equal(calendars[0].users.length + 1)
+                    done();
+                }).catch(e => done(e));
+            })
+    });
+
+    it("Should NOT join user to calendar (wrong pin)" , (done) => {
+        request(expressApp)
+            .post(`/weekly-calendars/join/${calendars[0]._id}`)
+            .set('x-auth', users[2].tokens[0].token)
+            .send({pin: "ANOTHER PIN"})
+            .expect(401)
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+
+                CalendarModel.findOne({_id: calendars[0]._id}).then((calendar) => {
+                    if (!calendar) {
+                        return done("Not found!");
+                    }
+                    expect(calendar.users).to.not.include.members([users[2]._id]);
+                    expect(calendar.users.length).to.equal(calendars[0].users.length)
+                    done();
+                }).catch(e => done(e));
+            })
+    });
+
+    it("Should NOT join user to calendar (Already joined)" , (done) => {
+        request(expressApp)
+            .post(`/weekly-calendars/join/${calendars[0]._id}`)
+            .set('x-auth', users[1].tokens[0].token)
+            .send({pin: calendars[0].pin})
+            .expect(400)
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+
+                CalendarModel.findOne({_id: calendars[0]._id}).then((calendar) => {
+                    if (!calendar) {
+                        return done("Not found!");
+                    }
+                    expect(calendar.users).to.include.members([users[1]._id]);
+                    expect(calendar.users.length).to.equal(calendars[0].users.length)
+                    done();
+                }).catch(e => done(e));
+            })
+    });
+
+    it("Should NOT join user to calendar (Join as owner)" , (done) => {
+        request(expressApp)
+            .post(`/weekly-calendars/join/${calendars[0]._id}`)
+            .set('x-auth', users[0].tokens[0].token)
+            .send({pin: calendars[0].pin})
+            .expect(400)
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+
+                CalendarModel.findOne({_id: calendars[0]._id}).then((calendar) => {
+                    if (!calendar) {
+                        return done();
+                    }
+                    expect(calendar.users).to.include.members([users[0]._id]);
+                    expect(calendar.users.length).to.equal(calendars[0].users.length)
+                    done();
+                }).catch(e => done(e));
+            })
+    });
+
 
 });
