@@ -6,22 +6,25 @@ import {CalendarModel} from "../models/Calendar";
 import {CreateCalendarDto} from "../interfaces/Calendar/CreateCalendarDto";
 import mongoose from "mongoose";
 import CalendarService from "../services/CalendarService";
+
+
 const {ObjectId} = mongoose.Types;
+
 import {calendarEventEmitter} from "../events/calendarEvents"
 import {EVENT_TYPE_NEW_ATTENDANCE} from "../events/eventTypes.const";
-import {Injectable} from "../utils/DependencyInjector";
 
-@Injectable()
+
 export default class CalendarController {
 
     public router: express.Router = express.Router();
+    private calendarService: CalendarService;
 
-    constructor(public calendarService: CalendarService) {
+    constructor(calendarService: CalendarService) {
+        this.calendarService = calendarService;
         this.initRoutes();
     }
 
     public initRoutes() {
-
         this.router.post('/', forceAuth, this.createCalendar);
         this.router.get('/own', forceAuth, this.getOwnCalendars);
         this.router.get('/connected', forceAuth, this.getConnectedCalendars);
