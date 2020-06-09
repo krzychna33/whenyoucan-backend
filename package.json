@@ -43,6 +43,7 @@
     "lodash": "^4.17.15",
     "moment": "^2.26.0",
     "mongoose": "^5.9.6",
+    "reflect-metadata": "^0.1.13",
     "socket.io": "^2.3.0",
     "supertest": "^4.0.2",
     "ts-node-dev": "^1.0.0-pre.44",
