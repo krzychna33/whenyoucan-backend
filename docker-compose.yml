@@ -1,0 +1,27 @@
+version: "3"
+services:
+  whenyoucan-backend:
+    container_name: whenyoucan-backend
+    image: whenyoucan-backend:latest
+    restart: always
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - whenyoucan-mongo
+    links:
+      - whenyoucan-mongo
+    environment:
+      MONGO_ADRESS: whenyoucan-mongo
+
+  whenyoucan-mongo:
+    container_name: whenyoucan-mongo
+    image: library/mongo:4.2.8-bionic
+    restart: always
+    volumes:
+      - ./data/db:/data/db
+    ports:
+      - "27017:27017"
